@@ -1,0 +1,231 @@
+#!/bin/bash
+# This script removes the TrustedInstaller user from the system.
+# It is intended for use on Windows systems and should be run with administrative privileges.
+# it also supports android and linux systems
+# Usage: ./trusted_installer_remover.sh
+
+# get sudo privileges if not already running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root. Please use sudo or run as an administrator."
+    echo "Attempting to run with sudo..."
+    exec sudo "$0" "$@" # Re-executes the script with sudo
+    exit 1 # Exit if sudo fails
+else
+    echo "Running as root. Proceeding with removal of TrustedInstaller."
+fi
+# Check if the script is run on a supported operating system
+if [[ "$OSTYPE" != "cygwin" && "$OSTYPE" != "msys" && "$OSTYPE" != "win32" && "$OSTYPE" != "android" && "$OSTYPE" != "linux-gnu"* ]]; then
+    echo "Unsupported operating system: $OSTYPE. This script only supports Windows, Android, and Linux."
+    echo "Please run this script on a supported operating system."
+    echo "Exiting..."
+    1>&2 echo "Error: Unsupported operating system: $OSTYPE. This script only supports Windows, Android, and Linux."
+    echo "Please run this script on a supported operating system."
+    echo "Exiting..."
+    # Exit with a non-zero status to indicate an error
+    1>&2 echo "Exiting with error code 1."
+    # Exit the script with an error code
+    1>&2 echo "Exiting with error code 1."
+    1>&2 echo "Please run this script on a supported operating system."
+    1>&2 echo "Exiting..."
+    1>&2 echo "Exiting with error code 1."
+    1>&2 echo "Please run this script on a supported operating system."
+    1>&2 echo "Exiting..."
+    exit 1
+fi
+# Check if the script is run on Windows, Android, or Linux
+if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    echo "Detected Windows operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Windows systems."
+    echo "Please ensure you have administrative privileges before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Windows..."
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "This script is not designed for macOS. Please run it on a Linux system."
+    exit 1
+elif [[ "$OSTYPE" == "android" ]]; then
+    echo "This script is designed to remove the TrustedInstaller user on Android systems."
+    echo "Please ensure you have the necessary permissions and adb installed before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Android..."
+    echo "Detected Android operating system."
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "Detected Linux operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Linux systems."
+    echo "Please ensure you have the necessary permissions before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Linux..."
+elif [[ "$OSTYPE" == "linux-android"* ]]; then
+    echo "Detected Android operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Android systems."
+    echo "Please ensure you have the necessary permissions and adb installed before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Android..."
+else
+    echo "Unsupported operating system: $OSTYPE. This script only supports Windows, Android, and Linux."
+    exit 1
+fi
+
+}
+
+# Check if the script is run with root privileges
+if [ "$EUID" -eq 0 ]; then
+    echo "Running as root. Proceeding with removal of TrustedInstaller."
+else
+    echo "This script must be run as root. Please use sudo or run as an administrator."
+    exit 1
+fi
+# Function to remove TrustedInstaller on Windows
+remove_trusted_installer_windows() {
+    echo "Removing TrustedInstaller on Windows..."
+    # Use PowerShell to remove TrustedInstaller
+    powershell -Command "Remove-LocalUser -Name 'TrustedInstaller' -ErrorAction Continue"
+    # Check if the command was successful
+    if [ $? -eq 0 ]; then
+        echo "TrustedInstaller has been successfully removed."
+    else
+        echo "Failed to remove TrustedInstaller. It may not exist or you may not have the necessary permissions."
+    fi
+}
+# Function to remove TrustedInstaller on android
+remove_trusted_installer_android() {
+    echo "Removing TrustedInstaller on Android..."
+    # Use adb to remove TrustedInstaller
+    adb shell "pm uninstall com.android.trustedinstaller"
+    # Check if the command was successful
+    if [ $? -eq 0 ]; then
+        echo "TrustedInstaller has been successfully removed from Android."
+    else
+        echo "Failed to remove TrustedInstaller from Android. It may not exist or you may not have the necessary permissions."
+    fi
+}
+# Function to remove TrustedInstaller on Linux
+remove_trusted_installer_linux() {
+    echo "Removing TrustedInstaller on Linux..."
+    # Use userdel to remove TrustedInstaller
+    userdel -r trustedinstaller
+    if [ $? -eq 0 ]; then
+        echo "TrustedInstaller has been successfully removed from Linux."
+    else
+        echo "Failed to remove TrustedInstaller from Linux. It may not exist or you may not have the necessary permissions."
+    fi
+}
+# Main script execution
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "Detected Linux operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Linux systems."
+    echo "Please ensure you have the necessary permissions before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Linux..."
+    echo "Removing TrustedInstaller on Linux..."
+    # Call the function to remove TrustedInstaller on Linux
+    function remove_trusted_installer_linux() {
+        echo "Removing TrustedInstaller on Linux..."
+        # Use userdel to remove TrustedInstaller
+        userdel -r trustedinstaller
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+            echo "TrustedInstaller has been successfully removed from Linux."
+        else
+            echo "Failed to remove TrustedInstaller from Linux. It may not exist or you may not have the necessary permissions."
+        fi
+    }
+    remove_trusted_installer_linux
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "This script is not designed for macOS. Please run it on a Linux system."
+    exit 1
+elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    echo "Detected Windows operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Windows systems."
+    echo "Please ensure you have administrative privileges before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Windows..."
+    echo "Removing TrustedInstaller on Windows..."
+    # Call the function to remove TrustedInstaller on Windows
+    function remove_trusted_installer_windows() {
+        echo "Removing TrustedInstaller on Windows..."
+        # Use PowerShell to remove TrustedInstaller
+        powershell -Command "Remove-LocalUser -Name 'TrustedInstaller' -ErrorAction Continue"
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+            echo "TrustedInstaller has been successfully removed."
+        else
+            echo "Failed to remove TrustedInstaller. It may not exist or you may not have the necessary permissions."
+        fi
+    }
+    # Call the function to remove TrustedInstaller on Windows
+    function remove_trusted_installer_windows() {
+        echo "Removing TrustedInstaller on Windows..."
+        # Use PowerShell to remove TrustedInstaller
+        powershell -Command "Remove-LocalUser -Name 'TrustedInstaller' -ErrorAction Continue"
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+            echo "TrustedInstaller has been successfully removed."
+        else
+            echo "Failed to remove TrustedInstaller. It may not exist or you may not have the necessary permissions."
+        fi
+    }
+    remove_trusted_installer_windows
+elif [[ "$OSTYPE" == "android" ]]; then
+    echo "Detected Android operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Android systems."
+    echo "Please ensure you have the necessary permissions and adb installed before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Android..."
+    adb root # Ensure adb is running as root
+    adb wait-for-device # Wait for the device to be ready
+    adb shell "pm uninstall com.android.trustedinstaller" # Uninstall TrustedInstaller
+    # Check if the command was successful
+    if [ $? -eq 0 ]; then
+        echo "TrustedInstaller has been successfully removed from Android."
+    else
+        echo "Failed to remove TrustedInstaller from Android. It may not exist or you may not have the necessary permissions."
+    fi
+    # Call the function to remove TrustedInstaller on Android
+    function remove_trusted_installer_android() {
+        echo "Removing TrustedInstaller on Android..."
+        # Use adb to remove TrustedInstaller
+        adb shell "pm uninstall com.android.trustedinstaller"
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+            echo "TrustedInstaller has been successfully removed from Android."
+        else
+            echo "Failed to remove TrustedInstaller from Android. It may not exist or you may not have the necessary permissions."
+        fi
+    }
+    remove_trusted_installer_android
+elif [[ "$OSTYPE" == "linux-android"* ]]; then
+    echo "Detected Android operating system."
+    echo "This script is designed to remove the TrustedInstaller user on Android systems."
+    echo "Please ensure you have the necessary permissions and adb installed before proceeding."
+    echo "Proceeding with removal of TrustedInstaller on Android..."
+    adb root # Ensure adb is running as root
+    adb wait-for-device # Wait for the device to be ready
+    adb shell "pm uninstall com.android.trustedinstaller" # Uninstall TrustedInstaller
+    # Check if the command was successful
+    if [ $? -eq 0 ]; then
+        echo "TrustedInstaller has been successfully removed from Android."
+    else
+        echo "Failed to remove TrustedInstaller from Android. It may not exist or you may not have the necessary permissions."
+    fi
+    # Call the function to remove TrustedInstaller on Android
+    function remove_trusted_installer_android() {
+        echo "Removing TrustedInstaller on Android..."
+        # Use adb to remove TrustedInstaller
+        adb shell "pm uninstall com.android.trustedinstaller"
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+            echo "TrustedInstaller has been successfully removed from Android."
+        else
+            echo "Failed to remove TrustedInstaller from Android. It may not exist or you may not have the necessary permissions."
+        fi
+    }
+}
+else
+    echo "Unsupported operating system: $OSTYPE. This script only supports Windows, Android, and Linux."
+    exit 1
+fi
+# End of script
+echo "Script execution completed."
+exit 0
+# Note: This script is provided for educational purposes only. Use it at your own risk.
+# Ensure you have backups and understand the implications of removing system users.
+# The TrustedInstaller user is a critical system user in Windows, and removing it may cause system instability.
+# Always test scripts in a safe environment before deploying them on production systems.
+# This script is not responsible for any damage or data loss that may occur as a result of its execution.
+# Use with caution and ensure you have the necessary permissions and backups before proceeding.
+# The script is designed to be run on systems where the TrustedInstaller user exists.
+# It is recommended to review the script and understand its functionality before executing it.
+# USE AT OWN RISK!
